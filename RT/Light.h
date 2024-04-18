@@ -1,0 +1,22 @@
+#ifndef LIGHT_H
+#define LIGHT_H
+
+#include "RT_Vector.h"
+#include "Ray.h"
+#include "Scene.h"
+
+class Scene;
+
+class Light{
+    public:
+        RT_Vector pos;
+        float startingIntensity;
+        float GetIntensity(Ray ray);
+        Scene* scene_ptr;
+        Light(RT_Vector p, float start_int);
+        ~Light();
+
+};
+
+
+#endif
