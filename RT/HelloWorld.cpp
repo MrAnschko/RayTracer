@@ -1,12 +1,17 @@
+#define BLOCKER_CACHE_SIZE 5
+
 #include <iostream>
 #include <vector>
 #include <string>
 
+#include <cstddef>
 #include "RT_Vector.h"
 #include "Camera.h"
 #include "Sphere.h"
 #include "Scene.h"
 #include "Plane.h"
+#include "Triangle.h"
+
 
 using namespace std;
 
@@ -15,11 +20,12 @@ int main()
     //Define Parameters for the Camera:
     RT_Vector up = RT_Vector(0,0,1); // the Up vector of the camera
     RT_Vector pos = RT_Vector(-3,0,2); // the position of the camera
+
     RT_Vector sDir = RT_Vector(1,0,0); // the direction of the screen.
     float hfov = 1;
     float vfov = 1;
-    float hres = 4000;
-    float vres = 4000;
+    float hres = 1080;
+    float vres = 1080;
     
     //Define the Camera
     Camera cam = Camera(
@@ -73,6 +79,13 @@ int main()
     Plane pln_3 = Plane(RT_Vector(0,1.0,0.1f),3.0f,&pl_1_mat,NULL);
 
 
+    //Define a triangle: 
+    RT_Vector tr_p1 = RT_Vector(5,0,0);
+    RT_Vector tr_p2 = RT_Vector(4,0,-3);
+    RT_Vector tr_p3 = RT_Vector(5,2,0);
+
+    Triangle tr_1 = Triangle(tr_p1,tr_p2, tr_p3, &pl_2_mat, NULL);
+
     //Define Lights
     int n_lights = 2;
     Light light1(RT_Vector(20,0,30),1000);
@@ -82,17 +95,16 @@ int main()
     lights[1] = &light2;
 
     //Define the Scene
-    int n_objects = 5; //Define the number of objects in the scene
+    int n_objects = 4; //Define the number of objects in the scene
     Object** objs = (Object**)(malloc(sizeof(Object*)*n_objects)); // Allocate memory for Objects
     objs[0] = &sp_1; //
     objs[1] = &sp_2; //
     objs[2] = &pln_1;
-    objs[3] = &pln_2;
-    objs[4] = &pln_3;
+    objs[3] = &tr_1;
+    // objs[3] = &pln_2;
+    // objs[4] = &pln_3;
 
-    
-    
-    Scene scn = Scene(objs,n_objects,lights,n_lights,&cam);
+    Scene scn = Scene(objs,n_objects,lights,n_lights,&cam, BLOCKER_CACHE_SIZE);
     scn.Render("test2.bmp");
 
     //Free the objects

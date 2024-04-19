@@ -1,5 +1,5 @@
 #define MIN_DIST 0.01f
-#define RAY_DEPTH 5
+#define RAY_DEPTH 3
 
 #include <limits>
 #include <iostream>
@@ -8,21 +8,25 @@
 #include "Object.h"
 #include "Camera.h"
 #include "RT_Vector.h"
+#include <cstddef>
 
-Scene::Scene(Object **objs, int n_objs,Light** l_ptrs, int n_ls, Camera *c)
+
+Scene::Scene(Object **objs, int n_objs,Light** l_ptrs, int n_ls, Camera *c , int block_cache_size)
 {
     cam_ptr = c;
     object_ptrs = objs;
     n_Objects = n_objs;
     light_ptrs = l_ptrs;
     n_lights = n_ls;
+    cache_size  = std::min(block_cache_size,n_Objects);
+     cache_end=cache_size-1 ;
 
     // when the scene is created make sure that each object and each light knows which scene it is in.
-    for (size_t i = 0; i < n_Objects; i++)
+    for (std::size_t i = 0; i < n_Objects; i++)
     {
         object_ptrs[i]->scene_ptr = this;
     }
-    for (size_t i = 0; i < n_lights; i++)
+    for (std::size_t i = 0; i < n_lights; i++)
     {
         light_ptrs[i]->scene_ptr = this;
     }
@@ -67,6 +71,7 @@ void Scene::Render(const char *path)
     img.Export(path);
 }
 
+// For one ray compute the color.
 void Scene::Raytrace(Ray r, int Depth, Color* col_ptr)
 {
     if( Depth <= 0)
@@ -81,11 +86,36 @@ void Scene::Raytrace(Ray r, int Depth, Color* col_ptr)
         closestObject->GetColor(r, t_min, Depth-1, col_ptr);
 }
 
+// cast a single ray and find the first object it hits
 void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
 {
     float t_min = std::numeric_limits<float>::infinity();
     float curr_t = std::numeric_limits<float>::infinity();
-    for(int i = 0; i < n_Objects; i++)
+    int index_of_min = -1;
+
+    // go over the cached objects first
+    for(int i = 0; i < cache_size; i++)
+    {   
+        Object* curr_obj = GetCacheObj(i);
+        if( curr_obj != ignore_obj)
+        {
+            if(curr_obj->Intersect(r,&curr_t))
+            {
+                if( curr_t> MIN_DIST && curr_t < t_min)
+                {
+                    t_min = curr_t;
+                    *object_ptr = curr_obj;
+                    
+                    int pos = (i+cache_end+1) % cache_size;
+                    if(pos<0)
+                        pos += cache_size;
+                    index_of_min = pos;
+                }
+            }
+        }
+    }
+    
+    for(int i = cache_size; i < n_Objects; i++)
     {
         if(object_ptrs[i] != ignore_obj)
         {
@@ -95,11 +125,73 @@ void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
                 {
                     t_min = curr_t;
                     *object_ptr = object_ptrs[i];
+                    index_of_min = i;
                 }
             }
         }
     }
+    
+    if(index_of_min >= 0)
+        AddObjectAtIndexToCache(index_of_min);
     *t = t_min;
+}
+
+bool Scene::RaycastHit(Ray r, float *maxDepth)
+{
+    float curr_t = std::numeric_limits<float>::infinity();
+    Object* object_hit_ptr;
+    
+    for(int i = 0; i < cache_size; i++)
+    {
+        if(GetCacheObj(i)->Intersect(r,&curr_t))
+        {
+            if( curr_t> MIN_DIST && curr_t < *maxDepth)
+            {
+                
+                int pos = (i+cache_end+1) % cache_size;
+                if(pos<0)
+                    pos += cache_size;
+                object_hit_ptr = GetCacheObj(pos);
+                return true;
+            }
+            
+        }
+    }
+    
+    for(int i = cache_size; i < n_Objects; i++)
+    {
+        if(object_ptrs[i]->Intersect(r,&curr_t))
+        {
+            if( curr_t> MIN_DIST && curr_t < *maxDepth)
+            {
+                object_hit_ptr = object_ptrs[i];
+                AddObjectAtIndexToCache(i);
+                return true;
+            }
+            
+        }
+    }
+    return false;
+}
+
+
+void Scene::AddObjectAtIndexToCache(int index)
+{
+    // Exchanges the entries of last index and the object to be added    
+    Object* prevEntry = object_ptrs[cache_end]; // Get previous last object in Queue
+    object_ptrs[cache_end] = object_ptrs[index]; // Get put new object to the end of the queue
+    cache_end--; // Shift end by one (so the last end is the beginning)
+    cache_end = cache_end < 0 ? cache_size-1 : cache_end; // do loop de loop
+    object_ptrs[index] = prevEntry; // put the object of the end of the queue to the place of the new object
+
+}
+
+Object *Scene::GetCacheObj(int index)
+{
+    int pos = (index+cache_end+1)% cache_size;
+    if(pos<0)
+        pos += cache_size;
+    return object_ptrs[pos];
 }
 
 Scene::~Scene()

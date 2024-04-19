@@ -1,5 +1,7 @@
 #include "Plane.h"
 #include "RT_Vector.h"
+#include <cstddef>
+
 #define SMALL 0.01
 
 bool Plane::Intersect(Ray r, float *out_t)
@@ -22,7 +24,7 @@ void Plane::GetColor(Ray r, float t, int dpth, Color *col_ptr)
     RT_Vector n =normal.Normalize();
     Ray normal_ray = Ray(hitPos,n);
     float cumulated_intensity = 0.0f;
-    for (size_t i = 0; i < scene_ptr->n_lights; i++)
+    for (std::size_t i = 0; i < scene_ptr->n_lights; i++)
     {
         cumulated_intensity += scene_ptr->light_ptrs[i]->GetIntensity(normal_ray);
     }

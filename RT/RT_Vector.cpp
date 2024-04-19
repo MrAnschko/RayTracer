@@ -69,6 +69,16 @@ RT_Vector RT_Vector::Add(RT_Vector vec_a, RT_Vector vec_b)
         );
 }
 
+RT_Vector RT_Vector::operator + (RT_Vector v)
+{
+    return RT_Vector::Add(*this,v);
+}
+
+RT_Vector RT_Vector::operator - (RT_Vector v)
+{
+    return RT_Vector::Add(*this, v.Negate());
+}
+
 RT_Vector RT_Vector::ScalarProduct(float scalar, RT_Vector vec)
 {
     return RT_Vector(
@@ -76,4 +86,9 @@ RT_Vector RT_Vector::ScalarProduct(float scalar, RT_Vector vec)
         vec.data[1] * scalar, 
         vec.data[2] * scalar 
     );
+}
+
+bool RT_Vector::Equals(RT_Vector vec_a, RT_Vector vec_b)
+{
+    return (vec_a.data[0] == vec_b.data[0] && vec_a.data[1] == vec_b.data[1] && vec_a.data[2] == vec_b.data[2]);
 }

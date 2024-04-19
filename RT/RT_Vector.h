@@ -18,6 +18,8 @@ class RT_Vector
         static RT_Vector CrossProduct(RT_Vector vec_a, RT_Vector vec_b); // returns the vector that is the result of the cross product of vector a and vector b;
         static float DotProduct(RT_Vector vec_a, RT_Vector vec_b); // returns the vector that is the result of the cross product of vector a and vector b;
         static RT_Vector Add(RT_Vector vec_a, RT_Vector vec_b); //  returns the vector that is the result of the cross product of vector a and b
+        RT_Vector operator + (RT_Vector v);
+        RT_Vector operator - (RT_Vector v);
         static RT_Vector ScalarProduct(float scalar, RT_Vector vec); //  returns the vector that is the result of the scalar product of a vector and a scalar
         static bool Equals(RT_Vector vec_a, RT_Vector vec_b); //  returns true if both vectors have the same values
         

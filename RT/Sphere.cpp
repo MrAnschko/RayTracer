@@ -1,6 +1,8 @@
 #include <math.h>
 
 #include "Sphere.h"
+#include <cstddef>
+
 
 class Scene;
 
@@ -39,7 +41,7 @@ void Sphere::GetColor(Ray r,float t ,int dpth, Color *col_ptr)
     RT_Vector normal = RT_Vector::Add(hitPos,pos.Negate());
     Ray normal_ray = Ray(hitPos,normal);
     float cumulated_intensity = 0.0f;
-    for (size_t i = 0; i < scene_ptr->n_lights; i++)
+    for (std::size_t i = 0; i < scene_ptr->n_lights; i++)
     {
         cumulated_intensity += scene_ptr->light_ptrs[i]->GetIntensity(normal_ray);
     }

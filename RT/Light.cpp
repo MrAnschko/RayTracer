@@ -1,8 +1,12 @@
 #include "Light.h"
 #include "RT_Vector.h"
 #include <iostream>
+#include <cstddef>
+#include "Object.h"
 
 #define EPSILON 0.01f
+
+class Object;
 
 float Light::GetIntensity(Ray ray)
 {
@@ -14,6 +18,7 @@ float Light::GetIntensity(Ray ray)
     float t;
     Object* obj_ptr = NULL;
     scene_ptr->Raycast(Ray(ray.pos,light_dir),&t,&obj_ptr,NULL);
+    
     if(obj_ptr!=NULL && t <=  (light_dir.Length() - EPSILON ) )
     {
          return 0.0f;
