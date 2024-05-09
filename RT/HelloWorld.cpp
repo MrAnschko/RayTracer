@@ -11,6 +11,7 @@
 #include "Scene.h"
 #include "Plane.h"
 #include "Triangle.h"
+#include "Grid.h"
 
 
 using namespace std;
@@ -26,6 +27,14 @@ int main()
     float vfov = 1;
     float hres = 1080;
     float vres = 1080;
+
+    // testing the grid.
+
+    RT_Vector grid_start = RT_Vector(-20,-20,-20);
+    RT_Vector grid_end = RT_Vector(+20,+20,+20);
+    RT_Vector grid_resolution = RT_Vector(40,40,40);
+    Grid g = Grid(grid_start,grid_end,grid_resolution);
+    
     
     //Define the Camera
     Camera cam = Camera(
@@ -78,7 +87,7 @@ int main()
     //Define Plane 3
     Plane pln_3 = Plane(RT_Vector(0,1.0,0.1f),3.0f,&pl_1_mat,NULL);
 
-
+    g.AddObject(sp_1);
     //Define a triangle: 
     RT_Vector tr_p1 = RT_Vector(5,0,0);
     RT_Vector tr_p2 = RT_Vector(4,0,-3);

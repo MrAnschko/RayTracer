@@ -42,6 +42,28 @@ bool Triangle::Intersect(Ray r, float *out_t)
     else // This means that there is a line intersection but not a ray intersection.
         return false;}
 
+BoundingBox *Triangle::GetBB()
+{
+    // find minimum values among points
+    float min_x = point_1.data[0] < point_2.data[0] ? point_1.data[0]:point_2.data[0] ;
+    min_x = min_x < point_3.data[0] ? min_x : point_3.data[0];
+    float min_y = point_1.data[1] < point_2.data[1] ? point_1.data[1]:point_2.data[1] ;
+    min_y = min_y < point_3.data[1] ? min_y : point_3.data[1];
+    float min_z = point_1.data[2] < point_2.data[2] ? point_1.data[2]:point_2.data[2] ;
+    min_z = min_z < point_3.data[2] ? min_z : point_3.data[2];
+    RT_Vector min = RT_Vector(min_x,min_y,min_z); 
+
+    float max_x = point_1.data[0] > point_2.data[0] ? point_1.data[0]:point_2.data[0] ;
+    max_x = max_x > point_3.data[0] ? min_x : point_3.data[0];
+    float max_y = point_1.data[1] > point_2.data[1] ? point_1.data[1]:point_2.data[1] ;
+    max_y = max_y > point_3.data[1] ? min_y : point_3.data[1];
+    float max_z = point_1.data[2] > point_2.data[2] ? point_1.data[2]:point_2.data[2] ;
+    max_z = max_z > point_3.data[2] ? min_z : point_3.data[2];
+    RT_Vector max = RT_Vector(min_x,min_y,min_z);
+
+    return new BoundingBox(min,max);
+}
+
 void Triangle::GetColor(Ray r, float t, int dpth, Color *col_ptr)
 {
     // Basically the same as from the PLane, so copy/pasete:

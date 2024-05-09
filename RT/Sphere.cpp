@@ -72,6 +72,14 @@ void Sphere::GetColor(Ray r,float t ,int dpth, Color *col_ptr)
 
 }
 
+BoundingBox *Sphere::GetBB()
+{
+    RT_Vector min = RT_Vector(pos.data[0]-radius,pos.data[1]-radius,pos.data[2]-radius);
+    RT_Vector max = RT_Vector(pos.data[0]+radius,pos.data[1]+radius,pos.data[2]+radius);
+
+    return new BoundingBox(min,max);
+}
+
 Sphere::Sphere(RT_Vector p, float r, Material* m, Scene* scn_ptr)
 {
     pos = p.Copy();

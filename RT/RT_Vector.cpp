@@ -59,6 +59,11 @@ float RT_Vector::DotProduct(RT_Vector vec_a, RT_Vector vec_b)
         return vec_a.data[0]*vec_b.data[0]+vec_a.data[1]*vec_b.data[1]+vec_a.data[2]*vec_b.data[2];
 }
 
+RT_Vector RT_Vector::HadamardProduct(RT_Vector vec_a, RT_Vector vec_b)
+{
+    return RT_Vector(vec_a.data[0]*vec_b.data[0],vec_a.data[1]*vec_b.data[1],vec_a.data[2]*vec_b.data[2]);
+}
+
 // Adds the content of two vectors
 RT_Vector RT_Vector::Add(RT_Vector vec_a, RT_Vector vec_b)
 {

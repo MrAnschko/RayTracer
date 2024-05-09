@@ -27,6 +27,7 @@ float Light::GetIntensity(Ray ray)
     return intensity*startingIntensity / RT_Vector::DotProduct(light_dir,light_dir);
 }
 
+
 Light::Light(RT_Vector p, float start_int)
 {
     pos = p;

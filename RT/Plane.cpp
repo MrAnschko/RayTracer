@@ -1,6 +1,7 @@
 #include "Plane.h"
 #include "RT_Vector.h"
 #include <cstddef>
+#include <limits>
 
 #define SMALL 0.01
 
@@ -15,6 +16,11 @@ bool Plane::Intersect(Ray r, float *out_t)
     *out_t = numerator/denominator;
     return true;
 
+}
+
+BoundingBox *Plane::GetBB()
+{
+    return &bb;
 }
 
 void Plane::GetColor(Ray r, float t, int dpth, Color *col_ptr)
@@ -61,6 +67,11 @@ Plane::Plane(RT_Vector n, float d, Material *m, Scene *sc_ptr)
     distance = d;
     mat = m;
     scene_ptr = sc_ptr;
+    RT_Vector min_bb = RT_Vector(-std::numeric_limits<float>::infinity(),-std::numeric_limits<float>::infinity(),-std::numeric_limits<float>::infinity());
+    RT_Vector max_bb = RT_Vector(std::numeric_limits<float>::infinity(),std::numeric_limits<float>::infinity(),std::numeric_limits<float>::infinity());
+    bb.min_expanse = min_bb;
+    bb.max_expanse = max_bb;
+
 }
 
 Plane::~Plane()

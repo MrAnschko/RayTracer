@@ -9,12 +9,19 @@ bool TriangleMesh::Intersect(Ray r, float *out_t)
     float curr_t = std::numeric_limits<float>::infinity();
     for(Triangle* tri : triangles)
     {
-        tri->Intersect(r,&curr_t);
-    } 
+        if(tri->Intersect(r,&curr_t))
+            return true;
+    }
+    return false;
 }
 
 void TriangleMesh::GetColor(Ray r, float t, int dpth, Color *col_ptr)
 {
+}
+
+BoundingBox *TriangleMesh::GetBB()
+{
+    return nullptr;
 }
 
 TriangleMesh::TriangleMesh(std::vector<Triangle *> tris, Material *m, Scene *sc_ptr)

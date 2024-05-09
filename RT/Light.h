@@ -6,6 +6,7 @@
 #include "Scene.h"
 #include <vector>
 #include "Object.h"
+#include "BoundingBox.h"
 
 class Scene;
 class Object;

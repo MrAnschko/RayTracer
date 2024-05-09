@@ -9,3 +9,8 @@ void Object::GetColor(Ray r, float t, int dpth, Color *col_ptr)
 {
 
 }
+
+BoundingBox *Object::GetBB()
+{
+    return new BoundingBox();
+}

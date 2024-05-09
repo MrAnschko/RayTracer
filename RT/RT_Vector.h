@@ -17,6 +17,7 @@ class RT_Vector
         float Length(); // Returns the length of the vector (according to p2-norm/euclidian);
         static RT_Vector CrossProduct(RT_Vector vec_a, RT_Vector vec_b); // returns the vector that is the result of the cross product of vector a and vector b;
         static float DotProduct(RT_Vector vec_a, RT_Vector vec_b); // returns the vector that is the result of the cross product of vector a and vector b;
+        static RT_Vector HadamardProduct(RT_Vector vec_a, RT_Vector vec_b); // returns the vector that is the result of the cross product of vector a and vector b;
         static RT_Vector Add(RT_Vector vec_a, RT_Vector vec_b); //  returns the vector that is the result of the cross product of vector a and b
         RT_Vector operator + (RT_Vector v);
         RT_Vector operator - (RT_Vector v);
