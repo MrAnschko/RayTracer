@@ -3,8 +3,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
 #include <cstddef>
+#include <list>
+
 #include "RT_Vector.h"
 #include "Camera.h"
 #include "Sphere.h"
@@ -25,16 +26,9 @@ int main()
     RT_Vector sDir = RT_Vector(1,0,0); // the direction of the screen.
     float hfov = 1;
     float vfov = 1;
-    float hres = 1080;
-    float vres = 1080;
+    float hres = 1000;
+    float vres = 1000;
 
-    // testing the grid.
-
-    RT_Vector grid_start = RT_Vector(-20,-20,-20);
-    RT_Vector grid_end = RT_Vector(+20,+20,+20);
-    RT_Vector grid_resolution = RT_Vector(40,40,40);
-    Grid g = Grid(grid_start,grid_end,grid_resolution);
-    
     
     //Define the Camera
     Camera cam = Camera(
@@ -87,7 +81,6 @@ int main()
     //Define Plane 3
     Plane pln_3 = Plane(RT_Vector(0,1.0,0.1f),3.0f,&pl_1_mat,NULL);
 
-    g.AddObject(sp_1);
     //Define a triangle: 
     RT_Vector tr_p1 = RT_Vector(5,0,0);
     RT_Vector tr_p2 = RT_Vector(4,0,-3);
@@ -104,14 +97,14 @@ int main()
     lights[1] = &light2;
 
     //Define the Scene
-    int n_objects = 4; //Define the number of objects in the scene
+    int n_objects = 6; //Define the number of objects in the scene
     Object** objs = (Object**)(malloc(sizeof(Object*)*n_objects)); // Allocate memory for Objects
     objs[0] = &sp_1; //
     objs[1] = &sp_2; //
     objs[2] = &pln_1;
     objs[3] = &tr_1;
-    // objs[3] = &pln_2;
-    // objs[4] = &pln_3;
+    objs[4] = &pln_2;
+    objs[5] = &pln_3;
 
     Scene scn = Scene(objs,n_objects,lights,n_lights,&cam, BLOCKER_CACHE_SIZE);
     scn.Render("test2.bmp");

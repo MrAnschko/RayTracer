@@ -41,6 +41,12 @@ RT_Vector RT_Vector::Negate()
     return RT_Vector::ScalarProduct(-1.0f,*this);
 }
 
+//will be bad if one of the entries is zero
+RT_Vector RT_Vector::Inverse()
+{
+    return RT_Vector(1/this->data[0],1/this->data[2],1/this->data[2]);
+}
+
 float RT_Vector::Length()
 {
     return sqrt(data[0]*data[0]+data[1]*data[1]+data[2]*data[2]);
@@ -74,6 +80,8 @@ RT_Vector RT_Vector::Add(RT_Vector vec_a, RT_Vector vec_b)
         );
 }
 
+
+
 RT_Vector RT_Vector::operator + (RT_Vector v)
 {
     return RT_Vector::Add(*this,v);
@@ -82,6 +90,11 @@ RT_Vector RT_Vector::operator + (RT_Vector v)
 RT_Vector RT_Vector::operator - (RT_Vector v)
 {
     return RT_Vector::Add(*this, v.Negate());
+}
+
+RT_Vector RT_Vector::operator*(float f)
+{
+    return RT_Vector(this->data[0]*f,this->data[1]*f,this->data[2]*f);
 }
 
 RT_Vector RT_Vector::ScalarProduct(float scalar, RT_Vector vec)

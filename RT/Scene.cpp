@@ -1,6 +1,8 @@
 #define MIN_DIST 0.01f
 #define RAY_DEPTH 3
-
+#define GRID_EXPANSE 30 
+#define GRID_RESOLUTION 60
+#define USE_GRID
 #include <limits>
 #include <iostream>
 
@@ -8,8 +10,11 @@
 #include "Object.h"
 #include "Camera.h"
 #include "RT_Vector.h"
-#include <cstddef>
+#include "AR_List.h"
 
+#include <cstddef>
+#include <cmath>
+#include <list>
 
 Scene::Scene(Object **objs, int n_objs,Light** l_ptrs, int n_ls, Camera *c , int block_cache_size)
 {
@@ -30,7 +35,18 @@ Scene::Scene(Object **objs, int n_objs,Light** l_ptrs, int n_ls, Camera *c , int
     {
         light_ptrs[i]->scene_ptr = this;
     }
+    RT_Vector min(-1* GRID_EXPANSE , -1* GRID_EXPANSE ,-1* GRID_EXPANSE );
+    RT_Vector max( GRID_EXPANSE , GRID_EXPANSE , GRID_EXPANSE );
+    RT_Vector res( GRID_RESOLUTION , GRID_RESOLUTION , GRID_RESOLUTION );
+    Grid g = Grid(min,max,res);
+    grid = g;
     
+    for (int i = 0; i < n_Objects; i++)
+    {
+        g.AddObject(object_ptrs[i]);
+    }
+    
+
     
 }
 
@@ -78,17 +94,77 @@ void Scene::Raytrace(Ray r, int Depth, Color* col_ptr)
         return;
     // Find closest hit;
     float t_min = std::numeric_limits<float>::infinity();
-    float curr_t = 1000.0; // float of the current hit of the object
     Object* closestObject = NULL;
     Raycast(r,&t_min,&closestObject,NULL);
-    
     if(closestObject != NULL )
         closestObject->GetColor(r, t_min, Depth-1, col_ptr);
 }
 
+void Scene::GridRaycast(Ray r, float *t_out, Object **object_ptr, Object *ignore_obj)
+{
+    float t_min = std::numeric_limits<float>::infinity();
+    float curr_t = std::numeric_limits<float>::infinity();
+    int index_of_min = -1;
+    // go over grid.
+    
+    // find the cell that 'switches the quickest' -> the longest part of the ray dir, scaled by the inverse of the cell size
+    // we can use it as an index/'parameter' and change the other cells accordingly
+    RT_Vector step = RT_Vector::HadamardProduct(r.dir, (grid.cell_size).Inverse());
+    float max_freq = std::abs(step.data[0]) > std::abs(step.data[1]) ? std::abs(step.data[0]) : std::abs(step.data[1]);
+    max_freq = std::abs(step.data[1]) > std::abs(step.data[2]) ? std::abs(step.data[1]) : std::abs(step.data[2]);
+    step = step * (1/max_freq);
+
+    // There should probably be error handling for if the ray doesn't start in the grid. 
+    // Couldn't be bothered to do that though.
+
+    RT_Vector g_start_index = RT_Vector::HadamardProduct(r.pos-grid.minCorner, (grid.cell_size).Inverse());
+
+    // go over the necessary 
+    for (RT_Vector current_g_pos = g_start_index.Copy();
+            grid.IndexWithinGrid(current_g_pos);
+            current_g_pos = current_g_pos+step
+         )
+    {
+        int x_index = std::floor(current_g_pos.data[0]);
+        int y_index = std::floor(current_g_pos.data[1]);
+        int z_index = std::floor(current_g_pos.data[2]);
+        AR_List_Util::AR_List<Object>* objs;
+        objs = grid.ObjectsInCellIndex(x_index,y_index,z_index);
+
+        if(objs != nullptr)
+        {
+            AR_List_Util::AR_List<Object>* curr = objs;
+
+            do
+            {
+                Object* o = curr->data;
+                if(o!=ignore_obj && o->Intersect(r,&curr_t)){
+                    if( curr_t> MIN_DIST && curr_t < t_min)
+                    {
+                        t_min = curr_t;
+                        *object_ptr = o;
+                    }
+                }
+                curr = curr->next;
+            } while (curr != objs);
+            
+
+        }
+
+
+        
+    }
+    *t_out = t_min;
+    
+}
+
 // cast a single ray and find the first object it hits
 void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
-{
+{   
+    #ifdef USE_GRID
+    GridRaycast(r,t,object_ptr,NULL);
+    return;
+    #endif
     float t_min = std::numeric_limits<float>::infinity();
     float curr_t = std::numeric_limits<float>::infinity();
     int index_of_min = -1;

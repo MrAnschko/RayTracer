@@ -72,12 +72,9 @@ void Sphere::GetColor(Ray r,float t ,int dpth, Color *col_ptr)
 
 }
 
-BoundingBox *Sphere::GetBB()
+BoundingBox * Sphere::GetBB()
 {
-    RT_Vector min = RT_Vector(pos.data[0]-radius,pos.data[1]-radius,pos.data[2]-radius);
-    RT_Vector max = RT_Vector(pos.data[0]+radius,pos.data[1]+radius,pos.data[2]+radius);
-
-    return new BoundingBox(min,max);
+    return &bb;
 }
 
 Sphere::Sphere(RT_Vector p, float r, Material* m, Scene* scn_ptr)
@@ -86,6 +83,11 @@ Sphere::Sphere(RT_Vector p, float r, Material* m, Scene* scn_ptr)
     radius = r;
     mat = m;
     scene_ptr = scn_ptr;
+    RT_Vector min = RT_Vector(pos.data[0]-radius,pos.data[1]-radius,pos.data[2]-radius);
+    RT_Vector max = RT_Vector(pos.data[0]+radius,pos.data[1]+radius,pos.data[2]+radius);
+    bb.min_expanse = min;
+    bb.max_expanse = max;
+
 }
 
 Sphere::~Sphere()

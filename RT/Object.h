@@ -1,7 +1,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
  
-#include "Scene.h"
 #include "Ray.h"
 #include "Image.h"
 #include "BoundingBox.h"

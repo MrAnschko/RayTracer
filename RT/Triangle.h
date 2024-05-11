@@ -11,6 +11,7 @@ class Triangle : public Object{
     private:
         RT_Vector normal;
         float distance;
+        BoundingBox bb;
     public:
         RT_Vector point_1;
         RT_Vector point_2;

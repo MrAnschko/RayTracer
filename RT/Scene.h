@@ -1,9 +1,12 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+
+#include "Grid.h"
 #include "Object.h"
 #include "Camera.h"
 #include "Light.h"
+
 class Object;
 class Light;
 
@@ -12,6 +15,8 @@ class Scene{
         void Raytrace(Ray r, int Depth, Color* col_ptr);
         int cache_end;
         int cache_size;
+        Grid grid;
+        void GridRaycast(Ray r, float* t_out, Object** obj_hit, Object* ignore_obj);
     public:
         Object **object_ptrs; // Pointer to the memory that holds the objects. Maybe should define a Data structure for that but I figured well do that anyway
         int n_Objects; // the number of objects in the scene

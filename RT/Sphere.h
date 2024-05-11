@@ -17,6 +17,8 @@ class Sphere : public Object{
         BoundingBox* GetBB() override;
         Sphere(RT_Vector p, float r, Material* m, Scene* sc_ptr);
         ~Sphere();
+    private:
+        BoundingBox bb;
 };
 
 #endif
