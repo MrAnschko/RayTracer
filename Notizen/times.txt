@@ -3,7 +3,8 @@
 4k*4k no grid no cache: 39.7s 40.75s 39.65s
 
 300 Objects:
-1k*1k no grid (5) cache: 16.03s 13.85s
+1k*1k no grid (5) cache: 16.03s 13.85s 14,41s
+1k*1k no grid no cache: 15.51s 15.4s 13,73s
 
 
 Command Windows:
