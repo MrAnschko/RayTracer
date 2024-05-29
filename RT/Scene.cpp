@@ -2,7 +2,8 @@
 #define RAY_DEPTH 3
 #define GRID_EXPANSE 30 
 #define GRID_RESOLUTION 60
-#define USE_GRID
+//#define USE_GRID
+//#define USE_CACHE
 #include <limits>
 #include <iostream>
 
@@ -24,7 +25,10 @@ Scene::Scene(Object **objs, int n_objs,Light** l_ptrs, int n_ls, Camera *c , int
     light_ptrs = l_ptrs;
     n_lights = n_ls;
     cache_size  = std::min(block_cache_size,n_Objects);
-     cache_end=cache_size-1 ;
+#ifndef USE_CACHE
+    cache_size = 0;
+#endif
+    cache_end=cache_size-1 ;
 
     // when the scene is created make sure that each object and each light knows which scene it is in.
     for (std::size_t i = 0; i < n_Objects; i++)
@@ -40,12 +44,12 @@ Scene::Scene(Object **objs, int n_objs,Light** l_ptrs, int n_ls, Camera *c , int
     RT_Vector res( GRID_RESOLUTION , GRID_RESOLUTION , GRID_RESOLUTION );
     Grid g = Grid(min,max,res);
     grid = g;
-    
+    #ifdef USE_GRID
     for (int i = 0; i < n_Objects; i++)
     {
         g.AddObject(object_ptrs[i]);
     }
-    
+    #endif
 
     
 }
@@ -104,61 +108,44 @@ void Scene::GridRaycast(Ray r, float *t_out, Object **object_ptr, Object *ignore
 {
     float t_min = std::numeric_limits<float>::infinity();
     float curr_t = std::numeric_limits<float>::infinity();
-    int index_of_min = -1;
-    // go over grid.
     
-    // find the cell that 'switches the quickest' -> the longest part of the ray dir, scaled by the inverse of the cell size
-    // we can use it as an index/'parameter' and change the other cells accordingly
-    RT_Vector step = RT_Vector::HadamardProduct(r.dir, (grid.cell_size).Inverse());
-    float max_freq = std::abs(step.data[0]) > std::abs(step.data[1]) ? std::abs(step.data[0]) : std::abs(step.data[1]);
-    max_freq = std::abs(step.data[1]) > std::abs(step.data[2]) ? std::abs(step.data[1]) : std::abs(step.data[2]);
-    step = step * (1/max_freq);
-
-    // There should probably be error handling for if the ray doesn't start in the grid. 
-    // Couldn't be bothered to do that though.
-
-    RT_Vector g_start_index = RT_Vector::HadamardProduct(r.pos-grid.minCorner, (grid.cell_size).Inverse());
-
-    // go over the necessary 
-    for (RT_Vector current_g_pos = g_start_index.Copy();
-            grid.IndexWithinGrid(current_g_pos);
-            current_g_pos = current_g_pos+step
-         )
+    // initializing point of entry for ray.
+    if(grid.WithinGrid(r.pos)){
+        // ray starts from within the grid
+    }
+    else
     {
-        int x_index = std::floor(current_g_pos.data[0]);
-        int y_index = std::floor(current_g_pos.data[1]);
-        int z_index = std::floor(current_g_pos.data[2]);
-        AR_List_Util::AR_List<Object>* objs;
-        objs = grid.ObjectsInCellIndex(x_index,y_index,z_index);
+        // ray is from the outside of the grid
+        // find the starting cell of the ray
+        
+        // possible min intersections:
 
-        if(objs != nullptr)
+        RT_Vector t_mins =  RT_Vector::HadamardProduct(grid.minCorner - r.pos, r.dir.Negate()); // t s corresponding to hits of the minimal  planes
+        RT_Vector t_maxs =  RT_Vector::HadamardProduct(grid.minCorner - r.pos+ grid.grid_size, r.dir.Negate()); // t's corresponding to hits of the maximum planes
+        // note that the t_mins needn't be smaller than the t_maxs
+
+
+        // check that at least one of the t's is not zero in each direction
+        // otherwise no hit with the grid
+        if
+        ( 
+            t_mins.data[0] < 0 && t_maxs.data[0] < 0 
+            || t_mins.data[1] < 0 && t_maxs.data[1] < 0 
+            || t_mins.data[2] < 0 && t_maxs.data[2] < 0 
+        )
         {
-            AR_List_Util::AR_List<Object>* curr = objs;
-
-            do
-            {
-                Object* o = curr->data;
-                if(o!=ignore_obj && o->Intersect(r,&curr_t)){
-                    if( curr_t> MIN_DIST && curr_t < t_min)
-                    {
-                        t_min = curr_t;
-                        *object_ptr = o;
-                    }
-                }
-                curr = curr->next;
-            } while (curr != objs);
-            
-
+            *t_out = t_min;
+            return;
         }
 
-
-        
     }
-    *t_out = t_min;
+
+
+    
     
 }
 
-// cast a single ray and find the first object it hits
+// cast a single ray and find the closest object it hits 
 void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
 {   
     #ifdef USE_GRID
@@ -168,11 +155,12 @@ void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
     float t_min = std::numeric_limits<float>::infinity();
     float curr_t = std::numeric_limits<float>::infinity();
     int index_of_min = -1;
-
+#ifdef USE_CACHE
     // go over the cached objects first
     for(int i = 0; i < cache_size; i++)
     {   
         Object* curr_obj = GetCacheObj(i);
+        
         if( curr_obj != ignore_obj)
         {
             if(curr_obj->Intersect(r,&curr_t))
@@ -190,6 +178,7 @@ void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
             }
         }
     }
+#endif
     
     for(int i = cache_size; i < n_Objects; i++)
     {
@@ -206,9 +195,10 @@ void Scene::Raycast(Ray r, float* t, Object** object_ptr, Object* ignore_obj)
             }
         }
     }
-    
+#ifdef USE_CACHE
     if(index_of_min >= 0)
         AddObjectAtIndexToCache(index_of_min);
+#endif
     *t = t_min;
 }
 
@@ -217,6 +207,7 @@ bool Scene::RaycastHit(Ray r, float *maxDepth)
     float curr_t = std::numeric_limits<float>::infinity();
     Object* object_hit_ptr;
     
+#ifdef USE_CACHE
     for(int i = 0; i < cache_size; i++)
     {
         if(GetCacheObj(i)->Intersect(r,&curr_t))
@@ -233,7 +224,8 @@ bool Scene::RaycastHit(Ray r, float *maxDepth)
             
         }
     }
-    
+#endif
+
     for(int i = cache_size; i < n_Objects; i++)
     {
         if(object_ptrs[i]->Intersect(r,&curr_t))
@@ -241,7 +233,9 @@ bool Scene::RaycastHit(Ray r, float *maxDepth)
             if( curr_t> MIN_DIST && curr_t < *maxDepth)
             {
                 object_hit_ptr = object_ptrs[i];
+                #ifdef USE_CACHE
                 AddObjectAtIndexToCache(i);
+                #endif
                 return true;
             }
             

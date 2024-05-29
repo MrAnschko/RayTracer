@@ -23,6 +23,7 @@ class RT_Vector
         RT_Vector operator + (RT_Vector v);
         RT_Vector operator - (RT_Vector v);
         RT_Vector operator * (float v);
+        static RT_Vector Random(RT_Vector min, RT_Vector max); // creates a random vector within the bounds
         static RT_Vector ScalarProduct(float scalar, RT_Vector vec); //  returns the vector that is the result of the scalar product of a vector and a scalar
         static bool Equals(RT_Vector vec_a, RT_Vector vec_b); //  returns true if both vectors have the same values
         

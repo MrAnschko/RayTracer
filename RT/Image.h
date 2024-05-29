@@ -1,4 +1,5 @@
 // taken from https://youtu.be/vqT5j38bWGg?si=OqEuJI-hCPmNBIYC
+// mostly
 #ifndef IMAGE_H
 #define IMAGE_H
 #include <vector>
@@ -21,6 +22,7 @@ public:
     Image(int width, int height);
     ~Image();
     Color GetColor(int x, int y) const;
+    static Color RandomColor();
     void SetColor(const Color& col, int x, int y);
     void Export(const char* path) const;
 private:

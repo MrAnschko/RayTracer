@@ -2,6 +2,7 @@
 #include <iostream>
 #include <math.h>
 
+
 RT_Vector::RT_Vector(float x, float y, float z)
 {
     data[0] = x; 
@@ -95,6 +96,15 @@ RT_Vector RT_Vector::operator - (RT_Vector v)
 RT_Vector RT_Vector::operator*(float f)
 {
     return RT_Vector(this->data[0]*f,this->data[1]*f,this->data[2]*f);
+}
+
+RT_Vector RT_Vector::Random(RT_Vector min, RT_Vector max)
+{
+    
+    float x = min.data[0]+(static_cast< float >(std::rand()) / static_cast< float >(RAND_MAX))*(max.data[0]-min.data[0]);
+    float y = min.data[1]+(static_cast< float >(std::rand()) / static_cast< float >(RAND_MAX))*(max.data[1]-min.data[1]);
+    float z = min.data[2]+(static_cast< float >(std::rand()) / static_cast< float >(RAND_MAX))*(max.data[2]-min.data[2]);
+    return RT_Vector(x,y,z);
 }
 
 RT_Vector RT_Vector::ScalarProduct(float scalar, RT_Vector vec)

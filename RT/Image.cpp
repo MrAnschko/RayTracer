@@ -2,6 +2,8 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 Color Color::Lerp(Color col_1, Color col_2, float t) const
 {
@@ -42,6 +44,17 @@ Image::~Image()
 Color Image::GetColor(int x, int y) const
 {
     return m_colors[y*m_width+x];
+}
+
+//makes a random color
+Color Image::RandomColor()
+{
+    //std::srand(time(nullptr)); // use current time as seed for random generator
+    float r = static_cast< float >(std::rand()) / static_cast< float >(RAND_MAX);
+    float g = static_cast< float >(std::rand()) / static_cast< float >(RAND_MAX);
+    float b = static_cast< float >(std::rand()) / static_cast< float >(RAND_MAX);
+
+    return Color(r,g,b);
 }
 
 void Image::SetColor(const Color& col, int x, int y)

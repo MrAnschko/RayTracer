@@ -1,0 +1,12 @@
+6 Objects, 2 Lights:
+4k*4k no grid (5) cache: 44.58 s 44.04s 44.06s
+4k*4k no grid no cache: 39.7s 40.75s 39.65s
+
+300 Objects:
+1k*1k no grid (5) cache: 16.03s 13.85s
+
+
+Command Windows:
+echo %time%
+HelloWorld.exe
+echo %time%

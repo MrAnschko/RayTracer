@@ -1,4 +1,5 @@
-#define BLOCKER_CACHE_SIZE 5
+#define BLOCKER_CACHE_SIZE 0 // size of the blocker cache. do not set to 0
+#define OBJECT_AMOUNT 300 // number of the objects generated in the scene
 
 #include <iostream>
 #include <vector>
@@ -21,7 +22,7 @@ int main()
 {
     //Define Parameters for the Camera:
     RT_Vector up = RT_Vector(0,0,1); // the Up vector of the camera
-    RT_Vector pos = RT_Vector(-3,0,2); // the position of the camera
+    RT_Vector pos = RT_Vector(-3,0,0); // the position of the camera
 
     RT_Vector sDir = RT_Vector(1,0,0); // the direction of the screen.
     float hfov = 1;
@@ -43,7 +44,7 @@ int main()
     
 
 
-    
+#ifndef OBJECT_AMOUNT   
     //Define a sphere 1 
     RT_Vector sp_pos_1 = RT_Vector(2,0,0); // Position of the sphere (in world coordinates)
     
@@ -88,14 +89,6 @@ int main()
 
     Triangle tr_1 = Triangle(tr_p1,tr_p2, tr_p3, &pl_2_mat, NULL);
 
-    //Define Lights
-    int n_lights = 2;
-    Light light1(RT_Vector(20,0,30),1000);
-    Light light2(RT_Vector(0,30,30),1000);
-    Light** lights=(Light **)(malloc(sizeof(Object*)*n_lights));
-    lights[0] = &light1;
-    lights[1] = &light2;
-
     //Define the Scene
     int n_objects = 6; //Define the number of objects in the scene
     Object** objs = (Object**)(malloc(sizeof(Object*)*n_objects)); // Allocate memory for Objects
@@ -105,6 +98,46 @@ int main()
     objs[3] = &tr_1;
     objs[4] = &pln_2;
     objs[5] = &pln_3;
+#endif
+
+#ifdef OBJECT_AMOUNT
+    std::srand(time(nullptr)); // use current time as seed for random generator
+    
+    // makes only spheres
+    int n_objects = OBJECT_AMOUNT ; //Define the number of objects in the scene
+    Object** objs = (Object**)(malloc(sizeof(Object*)*n_objects)); // Allocate memory for Objects
+
+    RT_Vector min(2,-20,-20);
+    RT_Vector max(10,20,20);
+
+    for(int i = 0; i < n_objects; i++)
+    {
+            //Define a sphere
+        RT_Vector *sp_pos = new RT_Vector();
+        RT_Vector vec = RT_Vector::Random(min,max); // Position of the sphere (in world coordinates)
+        *sp_pos = vec;
+
+        Color *sp_am_col = new Color();
+        *sp_am_col = Image::RandomColor(); // ambient Color of the sphere
+        Color *sp_spec_col = new Color();
+        *sp_spec_col = Image::RandomColor(); // Specular Color of the sphere
+        Color *sp_diff_col = new Color();
+        *sp_diff_col = Image::RandomColor(); // Diffuse Color of the sphere
+        
+        Material* mat = new Material( *sp_am_col ,  *sp_spec_col,  *sp_diff_col, 0.3f);
+        Sphere *sp = new Sphere(*sp_pos,1 ,mat,NULL);
+        objs[i] = sp;
+    }
+
+#endif
+    //Define Lights
+    int n_lights = 2;
+    Light light1(RT_Vector(20,0,30),1000);
+    Light light2(RT_Vector(0,30,30),1000);
+    Light** lights=(Light **)(malloc(sizeof(Object*)*n_lights));
+    lights[0] = &light1;
+    lights[1] = &light2;
+
 
     Scene scn = Scene(objs,n_objects,lights,n_lights,&cam, BLOCKER_CACHE_SIZE);
     scn.Render("test2.bmp");
